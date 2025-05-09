@@ -1,74 +1,44 @@
-export type Point = {
+export interface Point {
   x: number;
   y: number;
-};
+}
 
-export type Color =
-  | "black"
-  | "red"
-  | "green"
-  | "blue"
-  | "yellow"
-  | "purple"
-  | "orange"
-  | "cyan"
-  | "magenta";
+export type Color = string;
 
 export interface Turtle {
-  forward(units: number): void;
-  turn(degrees: number): void;
-  color(color: Color): void; 
-  getPosition(): Point; 
-  getHeading(): number; 
+  forward(distance: number): void;
+  turn(angle: number): void;
+  setColor(color: Color): void;
 }
 
 export class SimpleTurtle implements Turtle {
-  private x: number;
-  private y: number;
-  private headingDegrees: number; 
-  private penColor: Color = "black";
-  private path: { start: Point; end: Point; color: Color }[] = []; 
+  private position: Point = { x: 0, y: 0 };
+  private angle: number = 0;
+  private color: Color = "black";
+  private path: { start: Point; end: Point; color: Color }[] = [];
 
-  constructor(startX: number = 0, startY: number = 0) {
-    this.x = startX;
-    this.y = startY;
-    this.headingDegrees = 0; 
+  forward(distance: number): void {
+    const radians = (Math.PI / 180) * this.angle;
+    const newX = this.position.x + distance * Math.cos(radians);
+    const newY = this.position.y + distance * Math.sin(radians);
+    const newPoint: Point = { x: newX, y: newY };
+    this.path.push({
+      start: { ...this.position },
+      end: newPoint,
+      color: this.color,
+    });
+    this.position = newPoint;
   }
 
-  forward(units: number): void {
-    const startPoint: Point = { x: this.x, y: this.y };
-    const headingRadians = (this.headingDegrees * Math.PI) / 180;
-    this.x += units * Math.sin(headingRadians); 
-    this.y -= units * Math.cos(headingRadians);
-    const endPoint: Point = { x: this.x, y: this.y };
-    this.path.push({ start: startPoint, end: endPoint, color: this.penColor });
+  turn(angle: number): void {
+    this.angle = (this.angle + angle) % 360;
   }
 
-  turn(degrees: number): void {
-    this.headingDegrees += degrees;
-    this.headingDegrees = this.headingDegrees % 360; 
-    if (this.headingDegrees < 0) {
-      this.headingDegrees += 360;
-    }
-  }
-
-  color(color: Color): void {
-    this.penColor = color;
-  }
-
-  getPosition(): Point {
-    return { x: this.x, y: this.y };
-  }
-
-  getHeading(): number {
-    return this.headingDegrees;
+  setColor(color: Color): void {
+    this.color = color;
   }
 
   getPath(): { start: Point; end: Point; color: Color }[] {
     return this.path;
   }
 }
-export function drawLine(x1: number, y1: number, x2: number, y2: number): void {
-  console.log(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="black" stroke-width="2"/>`);
-}
-
